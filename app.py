@@ -35,5 +35,4 @@ def create_gradio_interface() -> gr.Interface:
     )
 
 
-if __name__ == "main":
-    create_gradio_interface().launch()
+create_gradio_interface().launch()
