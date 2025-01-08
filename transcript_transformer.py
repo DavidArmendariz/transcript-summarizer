@@ -5,14 +5,19 @@ load_dotenv()
 
 
 class TranscriptTransformer:
-    def __init__(self):
-        # System prompt template for consistent output
-        self.system_prompt = """You are an expert educational content creator. 
+    def __init__(self, model="gpt-4o-mini", max_tokens=128000):
+        self.model = model
+        self.max_model_tokens = max_tokens
+        self.final_response_system_prompt = """You are an expert educational content creator. 
         Your task is to transform informal transcripts into structured, engaging teaching materials.
         Focus on clarity, logical flow, and educational value."""
 
-        # Template for the lecture structure
-        self.lecture_template = """Transform the following transcript into a structured {duration}-minute lecture.
+        self.summarizer_system_prompt = """You are an expert educational content creator.
+        Your task is to summarize the following transcript chunk.
+        Ensure that the summary is concise and captures the main points.
+        """
+
+        self.final_response_user_prompt = """Transform the following transcript into a structured {duration}-minute lecture.
         
         Requirements:
         1. Create a clear introduction that sets context and learning objectives
@@ -25,7 +30,11 @@ class TranscriptTransformer:
         Format the output in markdown with clear section headers and proper spacing.
         """
 
-        self.max_model_tokens = 128000
+        self.summarizer_user_prompt = """
+        {context}
+        Summarize the following transcript chunk:
+        {chunk}
+        """
 
     def split_text_into_chunks(self, text: str) -> list[str]:
         """Split the text into chunks that fit within the token limit."""
@@ -55,17 +64,11 @@ class TranscriptTransformer:
             else ""
         )
 
-        prompt = f"""
-        {context}
-        Summarize the following transcript chunk:
-        {chunk}
-        """
-
         response = openai.chat.completions.create(
-            model="gpt-4o-mini",
+            model=self.model,
             messages=[
-                {"role": "system", "content": "You are a highly skilled educator AI."},
-                {"role": "user", "content": prompt},
+                {"role": "system", "content": self.summarizer_system_prompt},
+                {"role": "user", "content": self.summarizer_system_prompt.format(context=context, chunk=chunk)},
             ],
             max_tokens=max_output_tokens,
             temperature=0.7,
@@ -96,11 +99,11 @@ class TranscriptTransformer:
         summarized_transcript = self.summarize_text(
             raw_text, max_output_tokens=max_output_tokens
         )
-        full_text = f"{self.lecture_template.format(duration=lecture_duration, word_count=max_output_tokens)}\n\nTranscript:\n{summarized_transcript}"
+        full_text = f"{self.final_response_user_prompt.format(duration=lecture_duration, word_count=max_output_tokens)}\n\nTranscript:\n{summarized_transcript}"
         final_response = openai.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": self.system_prompt},
+                {"role": "system", "content": self.final_response_system_prompt},
                 {"role": "user", "content": full_text},
             ],
             max_tokens=max_output_tokens,

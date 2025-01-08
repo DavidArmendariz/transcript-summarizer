@@ -1,6 +1,7 @@
 import gradio as gr
 from pypdf import PdfReader
 
+from explanations import explanation1, explanation2, explanation3
 from transcript_transformer import TranscriptTransformer
 
 transformer = TranscriptTransformer()
@@ -28,18 +29,15 @@ def process_transcript(transcript_text: str, pdf_file, duration: int):
 with gr.Blocks() as demo:
     accordion1 = gr.Accordion("How prompts were engineered and refined?", open=False)
     with accordion1:
-        gr.Markdown("This is some additional information about the app.")
-        gr.Markdown("You can add more details here as needed.")
+        gr.Markdown(explanation1)
 
     accordion2 = gr.Accordion("Challenges faced", open=False)
     with accordion2:
-        gr.Markdown("This is some additional information about the app.")
-        gr.Markdown("You can add more details here as needed.")
+        gr.Markdown(explanation2)
 
     accordion3 = gr.Accordion("How the system can be extended or scaled?", open=False)
     with accordion3:
-        gr.Markdown("This is some additional information about the app.")
-        gr.Markdown("You can add more details here as needed.")
+        gr.Markdown(explanation3)
 
     gr.Interface(
         fn=process_transcript,
