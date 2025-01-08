@@ -96,9 +96,7 @@ class TranscriptTransformer:
         summarized_transcript = self.summarize_text(
             raw_text, max_output_tokens=max_output_tokens
         )
-        full_text = f"{self.lecture_template.format(
-                        duration=lecture_duration, word_count=max_output_tokens
-                    )}\n\nTranscript:\n{summarized_transcript}"
+        full_text = f"{self.lecture_template.format(duration=lecture_duration, word_count=max_output_tokens)}\n\nTranscript:\n{summarized_transcript}"
         final_response = openai.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
